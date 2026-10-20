@@ -7,12 +7,12 @@ Problema
 Grupos sensíveis — asmáticos, idosos, crianças e cardiopatas — são os mais afetados pela poluição atmosférica, mas os dados de poluentes são publicados em concentrações horárias de microgramas por metro cúbico, que nada comunicam à população. Esta aplicação transforma esse dado cru em uma classificação de risco e em uma recomendação de saúde objetiva.
 
 Arquitetura
-API pública  ──▶  transformações em memória  ──▶  Oracle SQL
+API pública transformações em memória  Oracle SQL
 (requests)        (3 operações)                   (oracledb)
 Etapa	Biblioteca	O que faz
 Extração	requests	GET na Open-Meteo Air Quality, uma requisição por cidade
 Transformação	padrão	Agregação diária, cálculo do IQA e classificação de risco
-Carga	oracledb	INSERT transacional com commit() e rollback()
+Carga	oracledb  INSERT transacional com commit() e rollback()
 API consumida
 URL base: https://air-quality-api.open-meteo.com/v1/air-quality
 Autenticação: nenhuma, gratuita e sem cadastro
