@@ -299,33 +299,7 @@ python -m pip install requests oracledb
 A biblioteca `oracledb` opera em modo thin por padrão, o que dispensa a
 instalação do Oracle Instant Client.
 
-### 2. Configurar o acesso ao banco
-
-Esta etapa é opcional. Sem nenhuma configuração, o programa solicita usuário e
-senha pelo teclado durante a execução.
-
-Para não digitar as credenciais a cada execução, copie o arquivo
-`.env.exemplo` para `.env` e preencha os valores:
-
-```
-ORACLE_USER=rm123456
-ORACLE_PASSWORD=sua_senha
-ORACLE_DSN=oracle.fiap.com.br:1521/ORCL
-```
-
-O arquivo `.env` está listado no `.gitignore` e não é versionado. Nenhuma
-credencial é gravada no código-fonte.
-
-As credenciais são resolvidas nesta ordem de prioridade:
-
-1. variáveis de ambiente definidas no sistema;
-2. arquivo `.env` ao lado do script;
-3. digitação pelo teclado, caso as duas anteriores estejam ausentes.
-
-A terceira opção permite que o projeto seja clonado e executado por outra
-pessoa, com as credenciais dela, sem qualquer alteração no código.
-
-### 3. Executar
+### 2. Executar
 
 ```bash
 python pipeline_qualidade_ar.py
