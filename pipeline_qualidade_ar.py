@@ -1,29 +1,17 @@
-"""
-Monitor de Qualidade do Ar com Alerta de Saude Publica
-FIAP - Checkpoint 5 - Computational Thinking using Python
-
-Consome a API publica Open-Meteo Air Quality, converte as concentracoes de
-poluentes no Indice de Qualidade do Ar da CONAMA 491/2018, classifica o risco
-a saude e persiste o resultado no Oracle.
-
-Dependencias: pip install requests oracledb
-Execucao:     configurar as credenciais do Oracle e rodar
-              python pipeline_qualidade_ar.py
-
-As credenciais do banco nao ficam no codigo-fonte. Sao lidas, nesta ordem, das
-variaveis de ambiente do sistema, do arquivo .env ao lado do script ou, na
-ausencia das duas, digitadas pelo teclado.
-"""
-
 import os
 import sys
 import getpass
 from datetime import datetime
 
+from rich.markup import escape
+from rich.console import Console
+console = Console()
+from rich.table import Table
+
+
 import requests
 import oracledb
 
-# ACESSO AO BANCO ORACLE DA FIAP
 
 ARQUIVO_ENV = ".env"
 ORACLE_DSN_PADRAO = "oracle.fiap.com.br:1521/ORCL"
@@ -90,32 +78,44 @@ def buscar_qualidade_ar(cidade):
         "forecast_days": DIAS_DE_PREVISAO,
     }
 
+      
+
+def buscar_qualidade_ar(cidade):
+    """Busca as medicoes de poluentes de uma cidade. Retorna o JSON ou None"""
+    parametros = {
+        "latitude": cidade["latitude"],
+        "longitude": cidade["longitude"],
+        "hourly": POLUENTES_CONSULTADOS,
+        "timezone": FUSO_HORARIO,
+        "forecast_days": DIAS_DE_PREVISAO,
+    }
+
     try:
         resposta = requests.get(URL_BASE_API, params=parametros,
                                 timeout=TIMEOUT_REQUISICAO)
 
         if resposta.status_code == 200:
-            print(f"  [OK 200] {cidade['cidade']}/{cidade['uf']}: dados recebidos.")
+            console.print(f"  [green][OK 200][/green] {cidade['cidade']}/{cidade['uf']}: dados recebidos.")
             return resposta.json()
 
         if resposta.status_code == 404:
-            print(f"  [ERRO 404] {cidade['cidade']}: endpoint nao encontrado.")
+            console.print(f"  [red][ERRO 404][/red] {cidade['cidade']}: endpoint nao encontrado.")
         elif resposta.status_code == 429:
-            print(f"  [ERRO 429] {cidade['cidade']}: limite de requisicoes excedido.")
+            console.print(f"  [yellow][ERRO 429][/yellow] {cidade['cidade']}: limite de requisicoes excedido.")
         elif resposta.status_code >= 500:
-            print(f"  [ERRO {resposta.status_code}] {cidade['cidade']}: falha no servidor da API.")
+            console.print(f"  [red][ERRO {resposta.status_code}][/red] {cidade['cidade']}: falha no servidor da API.")
         else:
-            print(f"  [ERRO {resposta.status_code}] {cidade['cidade']}: resposta inesperada.")
+            console.print(f"  [red][ERRO {resposta.status_code}][/red] {cidade['cidade']}: resposta inesperada.")
         return None
 
     except requests.exceptions.Timeout:
-        print(f"  [TIMEOUT] {cidade['cidade']}: a API nao respondeu em {TIMEOUT_REQUISICAO}s.")
+        console.print(f"  [yellow][TIMEOUT][/yellow] {cidade['cidade']}: a API nao respondeu em {TIMEOUT_REQUISICAO}s.")
     except requests.exceptions.ConnectionError:
-        print(f"  [SEM CONEXAO] {cidade['cidade']}: nao foi possivel alcancar a API.")
+        console.print(f"  [yellow][SEM CONEXAO][/yellow] {cidade['cidade']}: nao foi possivel alcancar a API.")
     except requests.exceptions.RequestException as erro:
-        print(f"  [FALHA NA REQUISICAO] {cidade['cidade']}: {erro}")
+        console.print(f"  [red][FALHA NA REQUISICAO][/red] {cidade['cidade']}: {escape(str(erro))}")
     except ValueError:
-        print(f"  [JSON INVALIDO] {cidade['cidade']}: resposta fora do formato esperado.")
+        console.print(f"  [red][JSON INVALIDO][/red] {cidade['cidade']}: resposta fora do formato esperado.")
 
     return None
 
@@ -160,7 +160,7 @@ def agregar_medicoes_por_dia(json_api, cidade):
     horarios = bloco_horario.get("time", [])
 
     if not horarios:
-        print(f"  [SEM DADOS] {cidade['cidade']}: a API nao retornou medicoes.")
+        console.print(f"  [red][SEM DADOS][/red] {cidade['cidade']}: a API nao retornou medicoes.")
         return []
 
     indices_por_dia = {}
