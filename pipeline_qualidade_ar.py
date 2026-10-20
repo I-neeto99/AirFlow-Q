@@ -12,7 +12,7 @@ Execucao:     configurar as credenciais do Oracle e rodar
 
 As credenciais do banco nao ficam no codigo-fonte. Sao lidas, nesta ordem, das
 variaveis de ambiente do sistema, do arquivo .env ao lado do script ou, na
-ausencia das duas, digitadas pelo teclado
+ausencia das duas, digitadas pelo teclado.
 """
 
 import os
@@ -131,6 +131,26 @@ def _maximo(valores):
     return round(max(validos), 2) if validos else None
 
 
+def _maxima_media_8h(valores):
+    """
+    Maior media movel de 8 horas consecutivas do dia.
+
+    A CONAMA define a faixa do ozonio sobre a media de 8h, nao sobre o pico
+    horario. Usar o pico superestimaria o indice de forma sistematica.
+    """
+    melhor = None
+
+    for inicio in range(len(valores) - 7):
+        janela = [v for v in valores[inicio:inicio + 8] if v is not None]
+        if len(janela) < 8:
+            continue
+        media = sum(janela) / 8
+        if melhor is None or media > melhor:
+            melhor = media
+
+    return round(melhor, 2) if melhor is not None else None
+
+
 def agregar_medicoes_por_dia(json_api, cidade):
     """
     Transformacao 1: converte as series horarias da API em registros diarios,
@@ -168,7 +188,7 @@ def agregar_medicoes_por_dia(json_api, cidade):
             "pm25_maximo": _maximo(pm25),
             "pm10_medio": _media(pm10),
             "pm10_maximo": _maximo(pm10),
-            "o3_maximo": _maximo(ozonio),
+            "o3_maximo": _maxima_media_8h(ozonio),
             "no2_maximo": _maximo(dioxido_nitrogenio),
         }
 
@@ -200,8 +220,9 @@ def calcular_iqa(registro):
     como indice do dia, conforme a CONAMA 491/2018.
 
     A norma usa media de 24h para material particulado, 8h para ozonio e 1h
-    para dioxido de nitrogenio. Como a API fornece serie horaria, usamos a
-    media diaria para PM e a maxima diaria para O3 e NO2
+    para dioxido de nitrogenio. A partir da serie horaria da API, usamos a
+    media diaria para PM, a maior media movel de 8h para O3 e a maxima
+    diaria para NO2
     """
     indices = {
         "PM2.5": calcular_indice_do_poluente(registro["pm25_medio"], FAIXAS_POR_POLUENTE["PM2.5"]),
