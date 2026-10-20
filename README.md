@@ -1,8 +1,4 @@
-Monitor de Qualidade do Ar com Alerta de Saúde Pública
-Pipeline de integração e persistência de dados que consome uma API pública de qualidade do ar, converte as concentrações de poluentes no Índice de Qualidade do Ar oficial brasileiro, classifica o risco à saúde e persiste o resultado em banco de dados Oracle.
-
-Desenvolvido como Checkpoint 5 da disciplina Computational Thinking using Python, do curso de Análise e Desenvolvimento de Sistemas da FIAP.
-
+AirFlow-Q
 O problema
 A poluição atmosférica não afeta todo mundo da mesma forma. Pessoas com asma e outras doenças respiratórias crônicas, cardiopatas, idosos e crianças pequenas são os grupos que sentem primeiro, e com mais intensidade, a piora da qualidade do ar. Para essas pessoas, saber com antecedência que o ar vai estar ruim é a diferença entre ajustar a rotina e ter uma crise.
 
